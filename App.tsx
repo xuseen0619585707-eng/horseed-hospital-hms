@@ -58,26 +58,34 @@ const Login = ({ onLogin }: { onLogin: () => void }) => {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
 
-  const handleSubmit = async (e: React.FormEvent) => {
+ const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
     setError('');
 
     try {
-      // UPDATED: Use relative path for Vercel
       const res = await fetch('/api/login', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ username, password }),
       });
 
+      // 1. Success (Status 200)
       if (res.ok) {
         onLogin();
-      } else {
-        setError('Invalid credentials');
+      } 
+      // 2. Wrong Password (Status 401)
+      else if (res.status === 401) {
+        setError('Your password and username is incorrect');
+      } 
+      // 3. Server Error (Status 500, 404, etc.)
+      else {
+        setError('The server not connected');
       }
+
     } catch (err) {
-      setError('Cannot connect to server. Please try again.');
+      // 4. Network Error (Internet down or Vercel crashed)
+      setError('The server not connected');
     } finally {
       setIsLoading(false);
     }
