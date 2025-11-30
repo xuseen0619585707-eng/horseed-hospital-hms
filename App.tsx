@@ -23,7 +23,7 @@ interface Patient {
   roomNumber: string;
 }
 
-// Chart data (Keep as visual mock or fetch from DB later)
+// Chart data (Visual mock for dashboard)
 const CHART_DATA = [
   { name: 'Mon', patients: 120 },
   { name: 'Tue', patients: 135 },
@@ -50,7 +50,7 @@ const Logo = () => (
   </div>
 );
 
-// --- Login Component (Connected) ---
+// --- Login Component (Vercel Ready) ---
 const Login = ({ onLogin }: { onLogin: () => void }) => {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
@@ -64,12 +64,12 @@ const Login = ({ onLogin }: { onLogin: () => void }) => {
     setError('');
 
     try {
-      const res = await fetch('http://127.0.0.1:5000/login', {
+      // UPDATED: Use relative path for Vercel
+      const res = await fetch('/api/login', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ username, password }),
       });
-      const data = await res.json();
 
       if (res.ok) {
         onLogin();
@@ -77,7 +77,7 @@ const Login = ({ onLogin }: { onLogin: () => void }) => {
         setError('Invalid credentials');
       }
     } catch (err) {
-      setError('Cannot connect to server. Is Python running?');
+      setError('Cannot connect to server. Please try again.');
     } finally {
       setIsLoading(false);
     }
@@ -137,7 +137,7 @@ const Login = ({ onLogin }: { onLogin: () => void }) => {
   );
 };
 
-// --- Add Patient Modal (Connected) ---
+// --- Add Patient Modal (Vercel Ready) ---
 const AddPatientModal = ({ isOpen, onClose, onRefresh }: { isOpen: boolean; onClose: () => void; onRefresh: () => void }) => {
   if (!isOpen) return null;
   
@@ -148,14 +148,19 @@ const AddPatientModal = ({ isOpen, onClose, onRefresh }: { isOpen: boolean; onCl
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    await fetch('http://127.0.0.1:5000/add_patient', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(formData)
-    });
-    onRefresh(); // Reload list
-    onClose();
-    setFormData({ name: '', age: '', gender: 'Male', diagnosis: '', doctor: 'Dr. Warsame', status: 'Stable', room: '' });
+    try {
+        // UPDATED: Use relative path for Vercel
+        await fetch('/api/add_patient', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(formData)
+        });
+        onRefresh(); // Reload list
+        onClose();
+        setFormData({ name: '', age: '', gender: 'Male', diagnosis: '', doctor: 'Dr. Warsame', status: 'Stable', room: '' });
+    } catch (error) {
+        console.error("Failed to add patient");
+    }
   };
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
@@ -211,10 +216,11 @@ const App: React.FC = () => {
   // Real Data State
   const [patients, setPatients] = useState<Patient[]>([]);
 
-  // FETCH PATIENTS FROM PYTHON
+  // FETCH PATIENTS FROM PYTHON (Vercel Ready)
   const fetchPatients = async () => {
     try {
-      const res = await fetch('http://127.0.0.1:5000/patients');
+      // UPDATED: Use relative path for Vercel
+      const res = await fetch('/api/patients');
       const data = await res.json();
       setPatients(data);
     } catch (error) {
