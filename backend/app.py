@@ -7,11 +7,12 @@ app = Flask(__name__)
 # Allow React (Port 3000) to talk to Python (Port 5000)
 CORS(app) 
 
-# CONFIG: Create 'hospital.db' inside the backend folder
-basedir = os.path.abspath(os.path.dirname(__file__))
-app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///' + os.path.join(basedir, 'hospital.db')
-app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+# NEW CODE (Paste this)
+import tempfile
 
+# Use the system's temporary folder (Works on Vercel AND Windows)
+db_file = os.path.join(tempfile.gettempdir(), 'hospital.db')
+app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///' + db_file
 db = SQLAlchemy(app)
 
 # --- MODEL 1: LOGIN TABLE ---
